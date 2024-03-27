@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+	<!-- activate annotations in beans -->
+	<context:annotation-config />
+	<!-- to scan packages for annotations -->
+	<context:component-scan base-package="com.hms.indus.*"></context:component-scan>
+	<!-- configure property file -->
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"
+		p:location="/WEB-INF/datasource.properties" />
+	<!-- boneCP configuration and connection pooling -->
+	<bean id="dataSource" class="com.jolbox.bonecp.BoneCPDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="${db.driverClassName}" />
+		<property name="jdbcUrl" value="${db.databaseUrl}" />
+		<property name="username" value="${db.username}" />
+		<property name="password" value="${db.password}" />
+		<property name="maxConnectionsPerPartition" value="60" />
+		<property name="minConnectionsPerPartition" value="20" />
+		<property name="partitionCount" value="3" />
+		<property name="acquireIncrement" value="10" />
+		<property name="statementsCacheSize" value="50" />
+	</bean>
+	<!-- <bean id="dataSource" destroy-method="close" class="org.apache.commons.dbcp.BasicDataSource"> 
+		<property name="driverClassName" value="${db.driverClassName}" /> <property 
+		name="url" value="${db.databaseUrl}" /> <property name="username" value="${db.username}" 
+		/> <property name="password" value="${db.password} " /> </bean> -->
+
+	<!-- Driver manager datasource configuration -->
+	<!-- <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" 
+		p:driverClassName="${db.driverClassName}" p:url="${db.databaseUrl}" p:username="${db.username}" 
+		p:password="${db.password}" /> -->
+
+	<!-- session factory configuration -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean ">
+		<property name="dataSource" ref="dataSource" />
+
+		<property name="packagesToScan">
+			<list>
+				<value>com.hms.indus.*</value>
+			</list>
+		</property>
+		<!-- <property name="packagesToScan" value="com.orcasys.whitepaper.*" /> -->
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${db.dialect}</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<!-- <prop key="hibernate.hbm2ddl.auto">update</prop> -->
+			</props>
+		</property>
+	</bean>
+	<!-- Enables Spring's annotation-driven transaction management capability -->
+	<tx:annotation-driven />
+	<!-- transactionManager configuration -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+
+	<bean class="com.hms.indus.util.ApplicationContextUtil" />
+
+</beans>    
